@@ -23,10 +23,16 @@ def proof_of_work(last_proof):
     start = timer()
 
     print("Searching for next proof")
-    proof = 0
-    prev_hash = hashlib.sha256(f"{last_proof}".encode()).hexdigest()
+    full_chain = requests.get(
+        url="https://lambda-coin.herokuapp.com/api/full_chain/")
+    last_block = data.json()["chain"][-1:][0]
 
-    while not valid_proof(prev_hash, proof):
+    proof = 0
+
+    prev_hash = hashlib.sha256(f"{last_proof}".encode()).hexdigest()
+    # make a req for the last block, pass the block to the valid_proof function
+
+    while not valid_proof(last_block, proof):
         proof += 1
 
     print("Proof found: " + str(proof) + " in " + str(timer() - start))
@@ -70,7 +76,7 @@ if __name__ == '__main__':
     # Run forever until interrupted
     while True:
         # Get the last proof from the server
-        r = requests.get(url=node + "/last_proof")
+        r = requests.get(url=node + "/last_proof/")
         data = r.json()
         new_proof = proof_of_work(data.get('proof'))
 
